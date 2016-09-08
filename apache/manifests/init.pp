@@ -13,7 +13,7 @@ class apache {
     case $osfamily {
         'Debian': {
             package { "libapache2-mod-wsgi-py3":
-                ensure => present,
+                ensure => '2.4',
                 require => [ Exec["update-package-repo"], Package[$apache_main_package] ],
             }
         }
