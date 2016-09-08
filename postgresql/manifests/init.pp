@@ -16,7 +16,7 @@ class postgresql {
 
     # install packages
     package { $packages:
-        ensure => present,
+        ensure => '9.3',
         require => Exec["update-package-repo"]
     }
 
