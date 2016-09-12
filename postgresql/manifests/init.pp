@@ -2,9 +2,13 @@ class postgresql {
     # package install list
     $packages = $osfamily ? {
         "Debian" => [
-            "postgresql",
-            "postgresql-contrib",
+            "postgresql-9.3",
+            "postgresql-contrib-9.3",
+	    "postgresql-server-dev-9.3",
             "postgresql-server-dev-all",
+            "dctrl-tools",
+            "lsb-release",
+            "make",
         ],
         "RedHat" => [
             "postgresql",
@@ -16,7 +20,7 @@ class postgresql {
 
     # install packages
     package { $packages:
-        ensure => '9.3',
+        ensure => present,
         require => Exec["update-package-repo"]
     }
 
