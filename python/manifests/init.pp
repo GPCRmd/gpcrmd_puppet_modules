@@ -82,7 +82,7 @@ class python {
     }
 
     $pip_packages = ["ipython", "django==1.9", "django-debug-toolbar", "psycopg2==2.6", "biopython==1.67", "xlrd", "numpy==1.11", "PyYAML",
-        "djangorestframework==3.4", "django-rest-swagger==0.3.10", "XlsxWriter", "sphinx","requests==2.11.1"]
+        "djangorestframework==3.4", "django-rest-swagger==0.3.10", "XlsxWriter", "sphinx","requests==2.11.1", "cairocffi", "Pillow", "defusedxml"]
 
     puppet::install::pip { $pip_packages: }
 }
