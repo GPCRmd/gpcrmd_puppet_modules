@@ -77,12 +77,12 @@ class python {
         exec { "install-$pip_package":
             command => "/env/bin/pip3 install $pip_package",
             timeout => 1800,
-            require => [Package["postgresql-9.3", "postgresql-contrib-9.3"], Exec["create-virtualenv"]]
+            require => [Package["postgresql-9.3", "postgresql-contrib-9.3","solr-jetty"], Exec["create-virtualenv"]]
         }
     }
 
     $pip_packages = ["ipython", "django==1.9", "django-debug-toolbar", "psycopg2==2.6", "biopython==1.67", "xlrd", "numpy==1.11", "PyYAML",
-        "djangorestframework==3.4", "django-rest-swagger==0.3.10", "XlsxWriter", "sphinx","requests==2.11.1"]
+        "djangorestframework==3.4", "django-rest-swagger==0.3.10", "XlsxWriter", "sphinx","requests==2.11.1",pysolr==3.6, django-haystack==2.5]
 
     puppet::install::pip { $pip_packages: }
 }
