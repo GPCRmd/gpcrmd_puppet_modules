@@ -1,4 +1,5 @@
 #! /usr/bin/bash
+tar -xvzf rdkit.tar.gz
 cd rdkit*
 export RDBASE=$(pwd)
 OLD_PYTHONPATH = $PYTHONPATH

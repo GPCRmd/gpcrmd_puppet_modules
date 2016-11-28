@@ -48,7 +48,7 @@ class rdkit {
     # install rdkit
     exec { "install-rdkit":
         cwd => "/protwis/conf/protwis_puppet_modules/rdkit/"
-        command => "bash rdkit.sh",
+        command => "bash ./scripts/rdkit.sh",
         require => [Exec["download-rdkit"],Package[$packages]],
     }
     
