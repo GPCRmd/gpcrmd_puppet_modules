@@ -109,5 +109,11 @@ class solr {
         require => [File["/var/lib/solr/collection_gpcrmd/data"],Package[$solrpackage],File["/var/lib/solr/collection_gpcrmd/conf"],File["/usr/share/solr/solr.xml"]],
     }
         
+    # build indexes
+    exec { "build-indexes":
+        cwd => "/protwis/sites/protwis"
+        command => "/env/bin/python3 manage.py rebuild_index",
+        require => [Exec["restart-jetty"],Exec["install-django-haystack==2.5"]],
+    }
     
 }
