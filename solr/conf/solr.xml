@@ -39,7 +39,7 @@
     If 'null' (or absent), cores will not be manageable via request handler
   -->
   <cores adminPath="/admin/cores" defaultCoreName="collection_gpcrmd">
-    <core name="collection1" instanceDir="./" />
+    <!--<core name="collection1" instanceDir="./" /> -->
     <core name="collection_gpcrmd" instanceDir="/var/lib/solr/collection_gpcrmd" />
   </cores>
 </solr>
