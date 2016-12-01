@@ -102,6 +102,13 @@ class solr {
         require => [File["/var/lib/solr/collection_gpcrmd/data"],Package[$solrpackage]],
     }
     
+    # disable jetty on startup
+    exec { "restart-jetty":
+        cwd => "/"
+        command => "update-rc.d jetty disable",
+        require => [File["/var/lib/solr/collection_gpcrmd/data"],Package[$solrpackage],File["/var/lib/solr/collection_gpcrmd/conf"],File["/usr/share/solr/solr.xml"]],
+    }
+    
     # restart jetty to apply new configuration
     exec { "restart-jetty":
         cwd => "/"
