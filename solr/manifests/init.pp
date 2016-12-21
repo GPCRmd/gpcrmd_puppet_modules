@@ -32,13 +32,13 @@ class solr {
     }
     package { $solrpackage:
         ensure => present,
-        require => [Package[$javapackage],$apache_packages],
+        require => [Package[$javapackage],Package[$apache_packages]],
     }
 
     if $operatingsystem == 'Ubuntu' {
         exec { "rotatelogs-bugfix":
-        cwd => "/"
-        command => "sed -i 's/^ROTATELOGS=.*$/ROTATELOGS=\/usr\/bin\/rotatelogs/' /etc/init.d/jetty",
+        cwd => "/",
+        command => "sed -i 's/^ROTATELOGS=.*$/ROTATELOGS=\\/usr\\/bin\\/rotatelogs/' /etc/init.d/jetty",
         require => Package[$solrpackage],
         before => Exec["restart-jetty"],
         }
@@ -103,24 +103,24 @@ class solr {
     }
     
     # disable jetty on startup
-    exec { "restart-jetty":
-        cwd => "/"
+    exec { "disable-jetty-on-startup":
+        cwd => "/",
         command => "update-rc.d jetty disable",
         require => [File["/var/lib/solr/collection_gpcrmd/data"],Package[$solrpackage],File["/var/lib/solr/collection_gpcrmd/conf"],File["/usr/share/solr/solr.xml"]],
     }
     
     # restart jetty to apply new configuration
     exec { "restart-jetty":
-        cwd => "/"
+        cwd => "/",
         command => "/etc/init.d/jetty restart",
         require => [File["/var/lib/solr/collection_gpcrmd/data"],Package[$solrpackage],File["/var/lib/solr/collection_gpcrmd/conf"],File["/usr/share/solr/solr.xml"]],
     }
         
     # build indexes
     exec { "build-indexes":
-        cwd => "/protwis/sites/protwis"
+        cwd => "/protwis/sites/protwis",
         command => "/env/bin/python3 manage.py rebuild_index",
-        require => [Exec["restart-jetty"],Exec["install-django-haystack==2.5"]],
+        require => [Exec["restart-jetty"],Exec["install-django-haystack==2.5"],Exec["install-rdkit"]],
     }
     
 }

@@ -15,8 +15,8 @@ class rdkit {
             "libfreetype6-dev",
             "liblcms2-dev",
             "libwebp-dev",
-            "tcl8.5-dev"
-            "tk8.5-dev"
+            "tcl8.5-dev",
+            "tk8.5-dev",
             "python3.4-dev",
             "python3-tk",
             "libboost1.54-dev",
@@ -42,14 +42,15 @@ class rdkit {
 
     # download rdkit
     exec { "download-rdkit":
-        command => "curl $url+$release > /protwis/conf/protwis_puppet_modules/rdkit/rdkit.tar.gz",
+        command => "curl -sLo /protwis/conf/protwis_puppet_modules/rdkit/rdkit.tar.gz ${url}${release}",
         timeout => 3600,
     }
     # install rdkit
     exec { "install-rdkit":
-        cwd => "/protwis/conf/protwis_puppet_modules/rdkit/"
+        cwd => "/protwis/conf/protwis_puppet_modules/rdkit/",
         command => "bash ./scripts/rdkit.sh",
         require => [Exec["download-rdkit"],Package[$packages]],
+        timeout     => 1800,
     }
     
 }

@@ -23,6 +23,8 @@ class python {
                 "python-biopython",
                 "python-openbabel",
                 "python-rdkit",
+                "python3-numpy",
+                "python3-scipy",
                 "python-yaml",
         ],
         "CentOS" => [
@@ -31,6 +33,8 @@ class python {
                 # for python2, will be removed
                 "python-biopython",
                 "python-openbabel",
+                "rh-python34-numpy",
+                "rh-python34-scipy",
                 #"python-rdkit",
                 "PyYAML",
         ],
@@ -82,7 +86,7 @@ class python {
     }
 
     $pip_packages = ["ipython", "django==1.9", "django-debug-toolbar", "psycopg2==2.6", "biopython==1.67", "xlrd", "numpy==1.11", "PyYAML",
-        "djangorestframework==3.4", "django-rest-swagger==0.3.10", "XlsxWriter", "sphinx","requests==2.11.1", "cairocffi", "Pillow", "defusedxml",pysolr==3.6, django-haystack==2.5]
+        "djangorestframework==3.4", "django-rest-swagger==0.3.10", "XlsxWriter", "sphinx","requests==2.11.1", "cairocffi", "Pillow", "defusedxml","pysolr==3.6","cython","mdtraj","django-graphos","django-haystack==2.5"]
 
     puppet::install::pip { $pip_packages: }
 }
