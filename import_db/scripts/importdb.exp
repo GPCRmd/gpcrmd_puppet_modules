@@ -45,6 +45,6 @@ if {$force_conservative} {
 set timeout -1
 spawn bash /protwis/conf/protwis_puppet_modules/import_db/scripts/import.sh
 match_max 100000
-expect -exact "Password for user protwis: "
+expect -exact "Password: "
 send -- "protwis\r"
 expect eof

@@ -1,1 +1,1 @@
-psql -U protwis -h localhost -o /dev/null protwis < /protwis/db/protwis.sql 2>/dev/null
+pg_restore -h localhost -U protwis -d protwis /protwis/db/dump.backup 2>/dev/null

@@ -31,29 +31,22 @@ class import_db {
         require => [ Exec["create-postgres-user"], Package["expect"], ],
     }
 
+    # import prepare db
+    exec { "import-db-prepare":
+        command => "expect -f /protwis/conf/protwis_puppet_modules/import_db/scripts/preparedb.exp",
+        require => [ Exec["create-postgres-db"], Package["expect"], ],
+    }
+
     # create db directory
     file { '/protwis/db':
         ensure => 'directory',
     }
 
-    # download db dump
-    exec { "dl-db-dump":
-        command => "curl http://files.gpcrdb.org/protwis_sp.sql.gz > /protwis/db/protwis.sql.gz",
-        timeout => 3600,
-        require => [Exec["create-postgres-db"], File['/protwis/db']],
-    }
-
-    # extract db dump
-    exec { "extract-db-dump":
-        cwd => "/protwis/db",
-        command => "gunzip -f protwis.sql.gz",
-        require => Exec["dl-db-dump"],
-    }
 
     # import db dump
     exec { "import-db-dump":
         command => "expect -f /protwis/conf/protwis_puppet_modules/import_db/scripts/importdb.exp",
         timeout => 3600,
-        require => [ Exec["extract-db-dump"], Package["expect"], ],
+        require => [ Exec["import-db-prepare"], Package["expect"], ],
     }
 }
