@@ -62,6 +62,7 @@ class python {
             "CentOS" => "wget https://bootstrap.pypa.io/get-pip.py;python3 get-pip.py",
             "Ubuntu" => "apt install -y python3-pip",
         },
+	require => Package[$packages],
     }
 
     # install virtualenv (using the system wide pip3 installation)
@@ -76,17 +77,28 @@ class python {
         require => Exec["install-virtualenv"],
     }
 
+
+    
+
+
     # install packages inside the virtualenv with pip
     define puppet::install::pip ($pip_package = $title) {
         exec { "install-$pip_package":
             command => "/env/bin/pip3 install $pip_package",
             timeout => 1800,
-            require => [Package["postgresql-9.3", "postgresql-contrib-9.3","solr-jetty"], Exec["create-virtualenv"]]
         }
     }
 
-    $pip_packages = ["ipython", "django==1.9", "django-debug-toolbar", "psycopg2==2.6", "biopython==1.67", "xlrd", "numpy==1.11", "PyYAML",
-        "djangorestframework==3.4", "django-rest-swagger==0.3.10", "XlsxWriter", "sphinx","requests==2.11.1", "cairocffi", "Pillow", "defusedxml","pysolr==3.6","cython","mdtraj","django-graphos","django-haystack==2.5"]
+    $pip_packages_first = ["psycopg2==2.6","django==1.9","numpy==1.11","scipy","cython","pysolr==3.6"]
+    puppet::install::pip { $pip_packages_first: 
+    	require => [Package["postgresql-9.3", "postgresql-contrib-9.3","solr-jetty"],Package[$packages], Exec["create-virtualenv"]]
+    }
 
-    puppet::install::pip { $pip_packages: }
+    $pip_packages = ["ipython", "certifi",  "django-debug-toolbar", "biopython==1.67", "xlrd", "PyYAML",
+        "djangorestframework==3.4", "django-rest-swagger==0.3.10", "XlsxWriter", "sphinx","requests==2.11.1", "cairocffi", "Pillow", "defusedxml","mdtraj","django-graphos","django-haystack==2.5"]
+
+    puppet::install::pip { $pip_packages:
+	before => Exec["build-indexes"],
+	require => [Puppet::Install::Pip[$pip_packages_first], Exec["create-virtualenv"]],
+    }
 }
