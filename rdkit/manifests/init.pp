@@ -43,14 +43,14 @@ class rdkit {
     # download rdkit
     exec { "download-rdkit":
         command => "curl -sLo /protwis/conf/protwis_puppet_modules/rdkit/rdkit.tar.gz ${url}${release}",
-        timeout => 3600,
+        timeout => 600,
     }
     # install rdkit
     exec { "install-rdkit":
         cwd => "/protwis/conf/protwis_puppet_modules/rdkit/",
         command => "bash ./scripts/rdkit.sh",
         require => [Exec["download-rdkit"],Package[$packages]],
-        timeout     => 1800,
+        timeout     => 3600,
     }
     
 }
