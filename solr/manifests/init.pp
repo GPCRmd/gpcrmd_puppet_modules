@@ -51,6 +51,8 @@ class solr {
         recurse => true,
         purge => true,
         force => true,
+        owner => jetty,
+        group => jetty,
         mode   => '0750',
         before => File["/var/lib/solr/collection_gpcrmd/data"],
         require => Package[$solrpackage],
@@ -65,16 +67,15 @@ class solr {
         owner => jetty,
         group => jetty,
         mode   => '0750',
-        before => File["/usr/share/solr/solr.xml"],
+        before => File["/etc/solr/solr.xml"],
         require => [File["/var/lib/solr/collection_gpcrmd/"],Package[$solrpackage]],
     }
     
     
     # create solr config
-    file { "/usr/share/solr/solr.xml":
+    file { "/etc/solr/solr.xml":
         ensure => present,
         replace => true,
-        links => follow,
         mode => 0744,
         owner => root,
         group => root,
@@ -106,14 +107,14 @@ class solr {
     exec { "disable-jetty-on-startup":
         cwd => "/",
         command => "update-rc.d jetty disable",
-        require => [File["/var/lib/solr/collection_gpcrmd/data"],Package[$solrpackage],File["/var/lib/solr/collection_gpcrmd/conf"],File["/usr/share/solr/solr.xml"]],
+        require => [File["/var/lib/solr/collection_gpcrmd/data"],Package[$solrpackage],File["/var/lib/solr/collection_gpcrmd/conf"],File["/etc/solr/solr.xml"]],
     }
     
     # restart jetty to apply new configuration
     exec { "restart-jetty":
         cwd => "/",
         command => "/etc/init.d/jetty restart",
-        require => [File["/var/lib/solr/collection_gpcrmd/data"],Package[$solrpackage],File["/var/lib/solr/collection_gpcrmd/conf"],File["/usr/share/solr/solr.xml"]],
+        require => [File["/var/lib/solr/collection_gpcrmd/data"],Package[$solrpackage],File["/var/lib/solr/collection_gpcrmd/conf"],File["/etc/solr/solr.xml"]],
     }
         
     # build indexes
