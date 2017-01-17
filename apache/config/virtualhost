@@ -1,9 +1,13 @@
+WSGIRestrictStdout Off
+LogLevel info
 <VirtualHost *:80>
-    WSGIDaemonProcess protwis python-path=/protwis/sites/protwis:/env/lib/python3.4/site-packages
-    WSGIProcessGroup protwis
+    WSGIDaemonProcess protwis python-path=/protwis/sites/protwis python-home=/env/
+    WSGIProcessGroup protwis 
+    WSGIApplicationGroup %{GLOBAL}
 
     Alias /static/ /protwis/static/protwis/
-    Alias /media/ /protwis/media/protwis/
+    #Alias /media/ /protwis/media/protwis/
+    Alias /dynadb/files/ /protwis/sites/files/ 
 
     <Directory /protwis/static/protwis>
     Require all granted
@@ -13,11 +17,32 @@
     Require all granted
     </Directory>
 
+    <Directory /protwis/sites/files>
+    	Require all granted
+    </Directory>
+
     <Directory /protwis/sites/protwis/protwis>
         <Files wsgi.py>
             Require all granted
         </Files>
     </Directory>
-
     WSGIScriptAlias / /protwis/sites/protwis/protwis/wsgi.py
 </VirtualHost>
+
+<VirtualHost *:8081>
+
+    # the wsgi process will run with the user & group specified below,
+    # so make sure that the files and directories you want to serve
+    # are accessible with that user & group combination
+    WSGIDaemonProcess mdsrv user=www-data group=www-data
+    WSGIScriptAlias /mdsrv /var/www/mdsrv/mdsrv.wsgi
+    <Directory /var/www/mdsrv>
+        WSGIProcessGroup mdsrv
+        WSGIApplicationGroup %{GLOBAL}
+        WSGIScriptReloading On
+        WSGIPassAuthorization On
+        Order Deny,Allow
+        Allow from all
+    </Directory>
+</VirtualHost>
+
