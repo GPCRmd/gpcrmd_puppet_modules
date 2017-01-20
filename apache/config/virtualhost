@@ -31,10 +31,19 @@ LogLevel info
 
 <VirtualHost *:8081>
 
+    DocumentRoot /var/www/
+    <Directory /var/www/>
+        Options -Indexes
+        AllowOverride None
+        Order Allow,Deny
+        Allow from all
+    </Directory>
+    
     # the wsgi process will run with the user & group specified below,
     # so make sure that the files and directories you want to serve
     # are accessible with that user & group combination
-    WSGIDaemonProcess mdsrv
+   
+   WSGIDaemonProcess mdsrv
     WSGIScriptAlias /mdsrv /var/www/mdsrv/mdsrv.wsgi
     <Directory /var/www/mdsrv>
         <Files mdsrv.wsgi>
@@ -46,6 +55,7 @@ LogLevel info
         Allow from all
         </Files>
     </Directory>
+    
     Alias /html/ /var/www/html/
     <Directory /var/www/html>
         Options FollowSymLinks
@@ -53,7 +63,7 @@ LogLevel info
         Order Allow,Deny
         Allow from all
     </Directory>
-
+    
     <Directory /var/www/mdsrv/mdsrv/webapp>
             AllowOverride None
             Order Allow,Deny
