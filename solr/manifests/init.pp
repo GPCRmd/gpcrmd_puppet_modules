@@ -120,6 +120,7 @@ class solr {
     # build indexes
     exec { "build-indexes":
         cwd => "/protwis/sites/protwis",
+        user => "vagrant",
         command => "/env/bin/python3 manage.py rebuild_index --noinput",
         require => [Exec["restart-jetty"],Exec["install-django-haystack==2.5"],Exec["install-rdkit"]],
     }
