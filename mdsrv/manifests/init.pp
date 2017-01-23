@@ -42,11 +42,22 @@ class mdsrv {
     exec { "install-mdsrv":
         cwd => "/protwis/conf/protwis_puppet_modules/mdsrv/",
         command => "bash ./scripts/mdsrv.sh ${apache_user}",
-        require => [Exec["download-mdsrv"],Puppet::Install::Pip[$pip_packages]],
-        timeout     => 600,
-        require => File["/var/www/"],
+        require => [File["/var/www/"], Exec["download-mdsrv"],Python::Puppet::Install::Pip[$pip_packages]],
+        timeout => 600,
     }
     
+    file { "/var/www/mdsrv/app.cfg":
+        ensure => present,
+        source => "/protwis/conf/protwis_puppet_modules/mdsrv/config/app.cfg",
+        require => Exec["install-mdsrv"],
+    }
+
+    file { "/var/www/mdsrv/mdsrv.wsgi":
+        ensure => present,
+        source => "/protwis/conf/protwis_puppet_modules/mdsrv/config/mdsrv.wsgi",
+        require => Exec["install-mdsrv"],
+    }
+
     file { '/var/www/html':
        ensure => 'link',
        recurse => true,

@@ -79,8 +79,14 @@ class apache {
     # create apache config
     file { "/etc/$apache_main_package/sites-available/000-default.conf":
         ensure => present,
-        recurse => true,
         source => "/protwis/conf/protwis_puppet_modules/apache/config/virtualhost",
+        require => Package[$apache_main_package],
+    }
+
+    # enable apache ports apache
+    file { "/etc/$apache_main_package/ports.conf":
+        ensure => present,
+        source => "/protwis/conf/protwis_puppet_modules/apache/config/ports.conf",
         require => Package[$apache_main_package],
     }
 
@@ -97,12 +103,12 @@ class apache {
         cwd => "/protwis/sites/protwis",
         command => "/env/bin/python3 manage.py build_blast_database",
         environment => ["LC_ALL=en_US.UTF-8"],
-        require => Exec["import-db-dump", "install-psycopg2"],
+        require => Exec["import-db-dump", "install-psycopg2==2.6"],
     }
     exec { "collect-static":
         cwd => "/protwis/sites/protwis",
         command => "/env/bin/python3 manage.py collectstatic --noinput",
-        require => Exec["import-db-dump", "install-psycopg2"],
+        require => Exec["import-db-dump", "install-psycopg2==2.6"],
     }
 
     # starts the apache2 service once the packages installed, and monitors changes to its configuration files and
