@@ -103,12 +103,12 @@ class apache {
         cwd => "/protwis/sites/protwis",
         command => "/env/bin/python3 manage.py build_blast_database",
         environment => ["LC_ALL=en_US.UTF-8"],
-        require => Exec["import-db-dump", "install-psycopg2==2.6"],
+        require => [Exec["import-db-dump", "install-rdkit"], Python::Puppet::Install::Pip[$python::pip_packages]],
     }
     exec { "collect-static":
         cwd => "/protwis/sites/protwis",
         command => "/env/bin/python3 manage.py collectstatic --noinput",
-        require => Exec["import-db-dump", "install-psycopg2==2.6"],
+        require => [Exec["import-db-dump", "install-rdkit"], Python::Puppet::Install::Pip[$python::pip_packages]],
     }
 
     # starts the apache2 service once the packages installed, and monitors changes to its configuration files and

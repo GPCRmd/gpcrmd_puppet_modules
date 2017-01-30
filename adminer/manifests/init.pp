@@ -1,5 +1,10 @@
 class adminer {
-
+    $apache_packages = $osfamily ? {
+        "Debian" => ["apache2"],
+        "RedHat" => ["httpd", "httpd-devel"],
+    }
+    $apache_main_package = $apache_packages[0]
+    
     # package install list
     $packages = [
         "adminer",
@@ -8,15 +13,15 @@ class adminer {
     # install packages
     package { $packages:
         ensure => present,
-        require => [Package["apache2"],Exec["update-package-repo"]]
+        require => [Package[$apache_main_package],Exec["update-package-repo"]]
     }
 
     # configure adminer
-    file { "/etc/apache2/conf-enabled/adminer.conf":
-        ensure => link,
-        target => "/etc/adminer/apache.conf",
+    file { "/etc/apache2/sites-enabled/adminer.conf":
+        ensure => present,
+        source => "/protwis/conf/protwis_puppet_modules/adminer/config/apache.conf",
         require => Package["adminer"],
-        notify => Service["apache2"],
+        notify => Service[$apache_main_package],
     }
 
     # starts the apache2 service once the packages installed, and monitors changes to its configuration files and
