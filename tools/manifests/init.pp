@@ -3,6 +3,7 @@ class tools {
     # package install list
     $packages = $operatingsystem ? {
         "Ubuntu" => [
+            "openbabel",
             "expect",
             "htop",
             "vim",
@@ -10,6 +11,7 @@ class tools {
             "ncbi-blast+",
         ],
         "CentOS" => [
+            "openbabel",
             "expect",
             "htop",
             "clustal-omega",
