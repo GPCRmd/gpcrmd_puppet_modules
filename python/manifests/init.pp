@@ -21,7 +21,6 @@ class python {
                 "python3-pip",
                 # for python2, will be removed
                 "python-biopython",
-                "python-openbabel",
                 "python-rdkit",
                 "python3-numpy",
                 "python3-scipy",
@@ -32,7 +31,6 @@ class python {
                 "python34-devel",
                 # for python2, will be removed
                 "python-biopython",
-                "python-openbabel",
                 "rh-python34-numpy",
                 "rh-python34-scipy",
                 #"python-rdkit",

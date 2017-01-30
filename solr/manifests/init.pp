@@ -114,15 +114,14 @@ class solr {
     exec { "restart-jetty":
         cwd => "/",
         command => "/etc/init.d/jetty restart",
-        require => [File["/var/lib/solr/collection_gpcrmd/data"],Package[$solrpackage],File["/var/lib/solr/collection_gpcrmd/conf"],File["/etc/solr/solr.xml"]],
+        require => [File["/var/lib/solr/collection_gpcrmd/data"],Package[$solrpackage],File["/var/lib/solr/collection_gpcrmd/conf"],File["/etc/solr/solr.xml"],File["/etc/default/jetty"]],
     }
         
     # build indexes
     exec { "build-indexes":
         cwd => "/protwis/sites/protwis",
-        user => "vagrant",
         command => "/env/bin/python3 manage.py rebuild_index --noinput",
-        require => [Exec["restart-jetty"],Exec["install-django-haystack==2.5"],Exec["install-rdkit"]],
+        require => [Exec["import-db-dump"],Exec["restart-jetty"],Python::Puppet::Install::Pip[$python::pip_packages],Exec["install-rdkit"]],
     }
     
 }
