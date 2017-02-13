@@ -10,6 +10,7 @@ class bootstrap {
     command => $operatingsystem ? {
         "CentOS" => "yum -y install epel-release",
         "Ubuntu" => 'sed -i "/^# deb.*multiverse/ s/^# //" /etc/apt/sources.list',
+    require => Group["puppet"],
     }
   }
 
@@ -20,6 +21,7 @@ class bootstrap {
         default => "w",
     },
     require => Exec["enable-alt-repos"],
+    notify => Exec["set-locale"],
   }
 
   exec { "set-locale":
