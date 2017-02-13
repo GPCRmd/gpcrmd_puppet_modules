@@ -1,4 +1,5 @@
 class mdsrv {
+    require python
     $release="v0.3.tar.gz"
     $url="https://github.com/arose/mdsrv/archive/"
     $pip_packages = ["numpy==1.11","scipy","cython"]

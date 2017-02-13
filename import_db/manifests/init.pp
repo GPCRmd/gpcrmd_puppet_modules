@@ -15,7 +15,7 @@
 
 class import_db {
     require postgresql
-
+    require tools
     # create postgres user
     exec { "create-postgres-user":
         command => "expect -f /protwis/conf/protwis_puppet_modules/import_db/scripts/createuser.exp",

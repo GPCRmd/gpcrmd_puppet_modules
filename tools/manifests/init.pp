@@ -22,6 +22,6 @@ class tools {
     # install packages
     package { $packages:
         ensure => present,
-        require => Exec["update-package-repo"]
+        require => Exec["update-package-repo"],
     }
 }

@@ -25,6 +25,8 @@ class python {
                 "python3-numpy",
                 "python3-scipy",
                 "python-yaml",
+                "libffi6",
+                "libffi-dev",
         ],
         "CentOS" => [
                 "python34",
@@ -35,6 +37,8 @@ class python {
                 "rh-python34-scipy",
                 #"python-rdkit",
                 "PyYAML",
+                "libffi",
+                "libffi-devel",
         ],
     }
 
