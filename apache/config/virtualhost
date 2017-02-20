@@ -43,7 +43,7 @@ LogLevel info
     # so make sure that the files and directories you want to serve
     # are accessible with that user & group combination
    
-   WSGIDaemonProcess mdsrv
+   WSGIDaemonProcess mdsrv python-home=/env/
     WSGIScriptAlias /mdsrv /var/www/mdsrv/mdsrv.wsgi
     <Directory /var/www/mdsrv>
         <Files mdsrv.wsgi>
