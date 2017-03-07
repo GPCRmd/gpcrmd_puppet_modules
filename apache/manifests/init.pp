@@ -2,8 +2,8 @@ class apache {
     require import_db
     # install apache
     $apache_packages = $osfamily ? {
-        "Debian" => ["apache2"],
-        "RedHat" => ["httpd", "httpd-devel"],
+        "Debian" => ["apache2","libapache2-mod-xsendfile"],
+        "RedHat" => ["httpd", "httpd-devel","mod_xsendfile"],
     }
     $apache_main_package = $apache_packages[0]
     package { $apache_packages:
