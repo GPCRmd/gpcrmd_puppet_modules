@@ -97,7 +97,7 @@ class python {
     }
 
     $pip_packages = ["ipython", "certifi",  "django-debug-toolbar", "biopython==1.67", "xlrd", "PyYAML",
-        "djangorestframework==3.4", "django-rest-swagger==0.3.10", "XlsxWriter", "sphinx","requests==2.11.1", "cairocffi", "Pillow", "defusedxml","mdtraj","django-graphos","django-haystack==2.5"]
+        "djangorestframework==3.4", "django-rest-swagger==0.3.10", "XlsxWriter", "sphinx","requests==2.11.1", "cairocffi", "Pillow", "defusedxml","mdtraj","django-graphos","django-haystack==2.5","django-revproxy"]
 
     puppet::install::pip { $pip_packages:
 	before => Exec["build-indexes"],
