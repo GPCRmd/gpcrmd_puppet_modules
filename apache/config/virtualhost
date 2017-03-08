@@ -1,73 +1,198 @@
 WSGIRestrictStdout Off
-LogLevel info
+LogLevel debug
+
+WSGIPythonHome /env
 <VirtualHost *:80>
+    AddCharset UTF-8 .log
+    AddType text/plain; .log
+    
+    #Uncomment for Apache mod_proxy method
+    ProxyRequests Off
+    <Proxy *>
+        #Order deny,allow
+        #Allow from all
+        Require all granted
+    </Proxy>
+    ProxyPass /mdsrv_redirect/ http://localhost:8081/mdsrv/
+    ProxyPassReverse /mdsrv_redirect/ http://localhost:8081/mdsrv/
+    ProxyPass /html/ http://localhost:8081/html/
+    ProxyPassReverse /html/ http://localhost:8081/html/
+    
+    # Turn on for overriding WSGIApplication reverse proxy in POST requests and
+    # for WSGI internal redirect + mod_proxy method.
+    RewriteEngine On
+    
+    # WSGI internal redirect + mod_proxy method for reverse proxy GET request access restrictions.
+    # Comment if not needed.
+    RewriteCond %{THE_REQUEST} ^[\S]+\ /mdsrv_redirect/
+    RewriteRule  "^/mdsrv_redirect/" - [F,L,NS]
+
+    # Uncomment for overriding WSGIApplication reverse proxy for all POST requests.
+    # Apache mod_proxy config above needs to be enabled.
+    # File access restrictions will need to be applied by HTTP authentication .
+    #RewriteCond %{REQUEST_METHOD} POST
+    #RewriteRule  "^/mdsrv/(.*)$" "/mdsrv_redirect/$1" [QSA,L,PT]
+    
+    #Uncomment for overriding WSGIApplication reverse proxy for non-restricted files
+    RewriteCond %{REQUEST_METHOD} POST
+    RewriteRule "^/mdsrv/(.*/_DB/[^/\\]+)(/[^/\\]+)?$" "/mdsrv_redirect/$1$2" [QSA,L,PT]
+
+    WSGIApplicationGroup %{GLOBAL}
     WSGIDaemonProcess protwis python-path=/protwis/sites/protwis python-home=/env/
     WSGIProcessGroup protwis 
     WSGIApplicationGroup %{GLOBAL}
 
     Alias /static/ /protwis/static/protwis/
+    #Alias /dynadb/files/ /protwis/sites/files/
     #Alias /media/ /protwis/media/protwis/
-    Alias /dynadb/files/ /protwis/sites/files/ 
+   
+    #Serve only non-restricted files and allow WSGIApplication to handle restricted ones. 
+    AliasMatch "^/dynadb/files/([^/\\\]+)(/[^/\\\]+)?$" "/protwis/sites/files/$1$2"
+    WSGIScriptAlias / /protwis/sites/protwis/protwis/wsgi.py
 
+    #Allow downloading static files (e.g. HTML, CSS, JS ...)
     <Directory /protwis/static/protwis>
-    Require all granted
+        AllowOverride None
+        #Order Deny,Allow
+        #Allow from all
+        Require all granted
     </Directory>
 
+    #Future possible location for media files
     <Directory /protwis/media/protwis>
-    Require all granted
+        AllowOverride None
+        #Order Deny,Allow
+        #Allow from all
+        Require all granted
     </Directory>
 
+    # Override files access restrictions for XSendFile
+    XSendFilePath /protwis/sites/files/
+    
+    #Deny access to restricted media files
+    <Directory /protwis/sites/files/*/*/*>
+        AllowOverride None
+        #Order Deny,Allow
+        #Deny from all
+        Require all denied
+    </Directory>
+
+    #Allow access to all uploaded and DB media files
     <Directory /protwis/sites/files>
-    	Require all granted
+        AllowOverride None
+        #Order Deny,Allow
+        #Allow from all
+        Require all granted
     </Directory>
 
-    <Directory /protwis/sites/protwis/protwis>
-        <Files wsgi.py>
+    #Allow access to WSGI application 
+    <Directory "/protwis/sites/protwis/protwis">
+        AllowOverride None
+        #Order Allow,Deny
+        #Deny from all 
+        Require all denied
+        <Files "wsgi.py">
+            #Listen for the XSendFile headers produced by this script
+            XSendFile On
+            #Order Deny,Allow
+            #Allow from all
             Require all granted
         </Files>
     </Directory>
-    WSGIScriptAlias / /protwis/sites/protwis/protwis/wsgi.py
+
+    # Uncomment for if mod_proxy is disabled
+    #Alias /html/ /var/www/html/
+    #<Directory /var/www/html>
+    #    Options FollowSymLinks
+    #    AllowOverride None
+    #    #Order Allow,Deny
+    #    #Allow from all
+    #    Require all granted
+    #</Directory>
+
+    # Restrict access to mod_proxy locations for restricted files by
+    # HTTP authentication using WSGIApplication user database.
+   # <LocationMatch "^/mdsrv_redirect/.*/_DB/[^/\\\]+/[^/\\\]+/.*$">
+   #      #Order Allow,Deny
+   #      #Allow from all
+   #      AuthType Basic
+   #      AuthName "gpcrmd_submission"
+   #      Require valid-user
+   #      AuthBasicProvider wsgi
+   #      WSGIAuthUserScript /protwis/sites/protwis/dynadb/auth_check_permissions.wsgi
+   #      Require all granted
+   # </LocationMatch>
+   # <LocationMatch "^/mdsrv_redirect/dir/_DB/[^/\\\]+/.+$">
+   #      #Order Allow,Deny
+   #      #Allow from all
+   #      AuthType Basic
+   #      AuthName "gpcrmd_submission"
+   #      Require valid-user
+   #      AuthBasicProvider wsgi
+   #      WSGIAuthUserScript /protwis/sites/protwis/dynadb/auth_check_permissions.wsgi
+   #      Require all granted
+   # </LocationMatch>
+   # <Directory "/protwis/sites/protwis/dynadb">
+   #     AllowOverride None
+   #     #Order Deny,Allow 
+   #     Require all denied
+   #     <Files "auth_check_permissions.wsgi">
+   #         #Order Deny,Allow
+   #         #Allow from all
+   #         Require all granted
+   #     </Files>
+   # </Directory>
+
+
+
 </VirtualHost>
 
+# mdsrv app
 <VirtualHost *:8081>
 
     DocumentRoot /var/www/
     <Directory /var/www/>
         Options -Indexes
         AllowOverride None
-        Order Allow,Deny
-        Allow from all
+        #Order Allow,Deny
+        #Allow from all
+        Require all granted
     </Directory>
     
     # the wsgi process will run with the user & group specified below,
     # so make sure that the files and directories you want to serve
     # are accessible with that user & group combination
-   
-   WSGIDaemonProcess mdsrv
-    WSGIScriptAlias /mdsrv /var/www/mdsrv/mdsrv.wsgi
+    WSGIDaemonProcess mdsrv user=www-data group=www-data python-home=/env
+    WSGIScriptAlias /mdsrv /var/www/mdsrv/mdsrv.wsgi 
     <Directory /var/www/mdsrv>
+        AllowOverride None
+        #Order Deny,Allow
+        #Deny from all
+        Require all denied
         <Files mdsrv.wsgi>
         WSGIProcessGroup mdsrv
         WSGIApplicationGroup %{GLOBAL}
         WSGIScriptReloading On
         WSGIPassAuthorization On
-        Order Deny,Allow
-        Allow from all
+        #Order Deny,Allow
+        #Allow from all
+        Require all granted
         </Files>
     </Directory>
-    
+
     Alias /html/ /var/www/html/
     <Directory /var/www/html>
         Options FollowSymLinks
         AllowOverride None
-        Order Allow,Deny
-        Allow from all
+        #Order Deny,Allow
+        #Allow from all
+        Require all granted
     </Directory>
-    
-    <Directory /var/www/mdsrv/mdsrv/webapp>
+
+    <Directory /var/www/mdsrv/mdsrv/webapp/>
             AllowOverride None
-            Order Allow,Deny
-            Allow from all
+            #Order Allow,Deny
+            #Allow from all
+            Require all granted
      </Directory>
 </VirtualHost>
-
