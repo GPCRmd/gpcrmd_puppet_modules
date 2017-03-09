@@ -36,7 +36,7 @@ class mdsrv {
         purge => false,
         replace => true,
         force => true,
-        mode   => '0750',
+        mode   => '0755',
         group => $apache_user,
         require => Package[$apache_packages],
     }
@@ -67,6 +67,27 @@ class mdsrv {
         notify => Service[$apache_main_package],
     }
 
+    file { "/var/www/mdsrv/mdsrv":
+        ensure => directory,
+        recurse => false,
+        purge => false,
+        replace => false,
+        force => false,
+        mode   => '0755',
+        group => $apache_user,
+        require => Exec["install-mdsrv"],
+    }
+
+    file { "/var/www/mdsrv/mdsrv/webapp":
+        ensure => directory,
+        recurse => true,
+        purge => false,
+        replace => false,
+        force => false,
+        mode   => '0644',
+        group => $apache_user,
+        require => Exec["install-mdsrv"],
+    }
 
     file { "/var/www/html":
        ensure => link,
