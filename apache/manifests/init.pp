@@ -31,9 +31,23 @@ class apache {
         }
     }
 
+    # enable apache included plugins
+    case $osfamily {
+        'Debian': {
+            exec { "enable-apache-plugins":
+                command => "a2enmod rewrite proxy proxy_http",
+                timeout => 3600,
+                require => Package[$apache_main_package],
+                before => File["/etc/$apache_main_package/sites-enabled/000-default.conf"],
+                notify => Service[$apache_main_package],
+            }
+        }
+    }
+
+
     # create dirs
     file { "/etc/$apache_main_package/sites-available":
-    ensure => directory,
+        ensure => directory,
         recurse => true,
         purge => true,
         force => true,
