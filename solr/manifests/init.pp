@@ -125,6 +125,7 @@ class solr {
         command => "/env/bin/python3 manage.py rebuild_index --noinput",
         require => [Exec["import-db-dump"],Exec["restart-jetty"],Python::Puppet::Install::Pip[$python::pip_packages],Exec["install-rdkit"]],
         notify => File["remove_django_cache_directory"],
+        timeout => 3600,
     }
     
 }
