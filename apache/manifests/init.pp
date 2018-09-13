@@ -35,7 +35,7 @@ class apache {
     case $osfamily {
         'Debian': {
             exec { "enable-apache-plugins":
-                command => "a2enmod rewrite proxy proxy_http",
+                command => "a2enmod rewrite proxy proxy_http xsendfile",
                 timeout => 3600,
                 require => Package[$apache_main_package],
                 before => File["/etc/$apache_main_package/sites-enabled/000-default.conf"],
