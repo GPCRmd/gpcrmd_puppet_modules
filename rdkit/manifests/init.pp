@@ -2,7 +2,7 @@ class rdkit {
     require python
     $release="Release_2016_03_1.tar.gz"
     $url="https://github.com/rdkit/rdkit/archive/"
-    $pip_packages = ["numpy==1.11","cairocffi", "Pillow"]
+    $pip_packages = ["numpy<1.12","cairocffi", "Pillow"]
     $packages = $operatingsystem ? {
         "Ubuntu" => [
             "build-essential",

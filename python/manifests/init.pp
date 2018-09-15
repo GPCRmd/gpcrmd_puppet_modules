@@ -86,19 +86,19 @@ class python {
     # install packages inside the virtualenv with pip
     define puppet::install::pip ($pip_package = $title) {
         exec { "install-$pip_package":
-            command => "/env/bin/pip3 install $pip_package",
+            command => "/env/bin/pip3 install \"$pip_package\"",
             timeout => 1800,
         }
     }
 
-    $pip_packages_first = ["psycopg2==2.6","django==1.9","numpy==1.11","scipy","cython","pysolr==3.6"]
+    $pip_packages_first = ["psycopg2<2.7","django<1.10","numpy<1.12","scipy","cython","pysolr<3.7"]
     puppet::install::pip { $pip_packages_first: 
     	require => [Package["postgresql-9.3", "postgresql-contrib-9.3","solr-jetty"],Package[$packages], Exec["create-virtualenv"]]
     }
 
-    $pip_packages = ["ipython", "certifi",  "django-debug-toolbar==1.9", "biopython==1.67", "xlrd", "PyYAML",
-        "djangorestframework==3.4", "django-rest-swagger==0.3.10", "XlsxWriter", "sphinx","requests==2.11.1", "cairocffi", "Pillow",
-	"defusedxml","mdtraj","django-graphos","django-haystack==2.5","django-revproxy","django-sendfile","pandas"]
+    $pip_packages = ["ipython", "certifi",  "django-debug-toolbar<1.10", "biopython<1.68", "xlrd", "PyYAML",
+        "djangorestframework<3.5", "django-rest-swagger==0.3.10", "XlsxWriter", "sphinx","requests<2.12", "cairocffi", "Pillow",
+	"defusedxml","mdtraj","django-graphos","django-haystack<2.6","django-revproxy","django-sendfile","pandas","bokeh"]
 
     puppet::install::pip { $pip_packages:
 	before => Exec["build-indexes"],
