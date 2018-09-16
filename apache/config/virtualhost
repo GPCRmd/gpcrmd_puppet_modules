@@ -149,15 +149,12 @@ WSGIPythonHome /env
 
 # mdsrv app
 <VirtualHost *:8081>
+    KeepAlive On
+    MaxKeepAliveRequests 100
+    KeepAliveTimeout 5
+    #DeflateCompressionLevel 5
 
-    DocumentRoot /var/www/
-    <Directory /var/www/>
-        Options -Indexes
-        AllowOverride None
-        #Order Allow,Deny
-        #Allow from all
-        Require all granted
-    </Directory>
+    DocumentRoot /var/www/html
     
     # the wsgi process will run with the user & group specified below,
     # so make sure that the files and directories you want to serve
@@ -180,19 +177,25 @@ WSGIPythonHome /env
         </Files>
     </Directory>
 
-    Alias /html/ /var/www/html/
-    <Directory /var/www/html>
-        Options FollowSymLinks
-        AllowOverride None
-        #Order Deny,Allow
-        #Allow from all
-        Require all granted
+    Alias /html/mdsrv/webapp/ /env/lib/python3.4/site-packages/mdsrv/webapp/
+    Alias /mdsrv/webapp/ /env/lib/python3.4/site-packages/mdsrv/webapp/
+    <Directory /env/lib/python3.4/site-packages/mdsrv/webapp/>
+            SetOutputFilter DEFLATE
+            AllowOverride None
+            Order Allow,Deny
+            Allow from all
+            #Require all granted
     </Directory>
 
-    <Directory /var/www/mdsrv/mdsrv/webapp/>
-            AllowOverride None
-            #Order Allow,Deny
-            #Allow from all
-            Require all granted
-     </Directory>
+
+    Alias /html/ /var/www/html/
+    <Directory /var/www/html>
+        SetOutputFilter DEFLATE
+        Options FollowSymLinks
+        AllowOverride None
+        Order Deny,Allow
+        Allow from all
+        #Require all granted
+    </Directory>
+
 </VirtualHost>

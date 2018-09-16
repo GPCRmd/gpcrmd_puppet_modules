@@ -91,7 +91,7 @@ class python {
         }
     }
 
-    $pip_packages_first = ["psycopg2<2.7","django<1.10","numpy<1.12","scipy","cython","pysolr<3.7"]
+    $pip_packages_first = ["psycopg2<2.7","django<1.10","numpy<1.12","scipy","cython","pysolr<3.7","flask"]
     puppet::install::pip { $pip_packages_first: 
     	require => [Package["postgresql-9.3", "postgresql-contrib-9.3","solr-jetty"],Package[$packages], Exec["create-virtualenv"]]
     }
@@ -101,7 +101,27 @@ class python {
 	"defusedxml","mdtraj","django-graphos","django-haystack<2.6","django-revproxy","django-sendfile","pandas","bokeh"]
 
     puppet::install::pip { $pip_packages:
-	before => Exec["build-indexes"],
-	require => [Puppet::Install::Pip[$pip_packages_first], Exec["create-virtualenv"]],
+	      before => Exec["build-indexes"],
+	      require => [Puppet::Install::Pip[$pip_packages_first], Exec["create-virtualenv"]],
+    }
+    
+    #https://github.com/arose/mdsrv/pull/41
+    #https://github.com/pypa/setuptools/issues/458
+    exec { "mdsrv-bug-fix":
+            command => "/env/bin/pip3 install \"setuptools<38\"",
+            timeout => 1800,
+            require => Puppet::Install::Pip[$pip_packages],
+    }
+    
+    
+    puppet::install::pip { "mdsrv":
+	      before => Exec["build-indexes"],
+	      require => [Exec["mdsrv-bug-fix"] ,Puppet::Install::Pip[$pip_packages] ],
+    }
+    
+    exec { "restore-setuptools":
+            command => "/env/bin/pip3 install --upgrade \"setuptools\"",
+            timeout => 1800,
+            require => [Exec["mdsrv-bug-fix"] ,Puppet::Install::Pip["mdsrv"] ],
     }
 }
