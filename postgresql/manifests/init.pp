@@ -44,7 +44,7 @@ class postgresql {
         exec { "init-postgres-db":
             command => "/usr/bin/true",
             unless => "postgresql-setup initdb", # if this command fails (DB already initialized, do nothing)
-            require => Package['postgresql'],
+            require => Package[$packages],
         }
 
         exec { "allow-postgres-password-auth":
@@ -57,4 +57,10 @@ class postgresql {
             require => Exec['allow-postgres-password-auth'],
         }
     }
+
+    service { 'postgresql':
+            ensure   => 'running',
+            require => Package[$packages],
+    }
+
 }
