@@ -182,9 +182,9 @@ WSGIPythonHome /env
     <Directory /env/lib/python3.4/site-packages/mdsrv/webapp/>
             SetOutputFilter DEFLATE
             AllowOverride None
-            Order Allow,Deny
-            Allow from all
-            #Require all granted
+            #Order Allow,Deny
+            #Allow from all
+            Require all granted
     </Directory>
 
 
@@ -193,9 +193,9 @@ WSGIPythonHome /env
         SetOutputFilter DEFLATE
         Options FollowSymLinks
         AllowOverride None
-        Order Deny,Allow
-        Allow from all
-        #Require all granted
+        #Order Deny,Allow
+        #Allow from all
+        Require all granted
     </Directory>
 
 </VirtualHost>
