@@ -22,6 +22,7 @@ class python {
                 # for python2, will be removed
                 "python-biopython",
                 "python-rdkit",
+                "python3-matplotlib",
                 "python3-numpy",
                 "python3-scipy",
                 "python-yaml",
@@ -33,6 +34,7 @@ class python {
                 "python34-devel",
                 # for python2, will be removed
                 "python-biopython",
+                "python-matplotlib",
                 "rh-python34-numpy",
                 "rh-python34-scipy",
                 #"python-rdkit",
@@ -91,13 +93,13 @@ class python {
         }
     }
 
-    $pip_packages_first = ["psycopg2<2.7","django<1.10","numpy<1.12","scipy","cython","pysolr<3.7","flask"]
+    $pip_packages_first = ["psycopg2<2.7","django<1.10","numpy","scipy","cython","pysolr<3.7","flask","Pillow"]
     puppet::install::pip { $pip_packages_first: 
     	require => [Package["postgresql-9.3", "postgresql-contrib-9.3","solr-jetty"],Package[$packages], Exec["create-virtualenv"]]
     }
 
-    $pip_packages = ["ipython", "certifi",  "django-debug-toolbar<1.10", "biopython<1.68", "xlrd", "PyYAML",
-        "djangorestframework<3.5", "django-rest-swagger==0.3.10", "XlsxWriter", "sphinx","requests<2.12", "cairocffi", "Pillow",
+    $pip_packages = ["matplotlib<3.1","ipython", "certifi",  "django-debug-toolbar<1.10", "biopython<1.68", "xlrd", "PyYAML",
+        "djangorestframework<3.5", "django-rest-swagger==0.3.10", "XlsxWriter", "sphinx","requests<2.12", "cairocffi",
 	"defusedxml","mdtraj","django-graphos","django-haystack<2.6","django-revproxy","django-sendfile","pandas","bokeh"]
 
     puppet::install::pip { $pip_packages:

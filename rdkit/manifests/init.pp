@@ -2,7 +2,7 @@ class rdkit {
     require python
     $release="Release_2016_03_1.tar.gz"
     $url="https://github.com/rdkit/rdkit/archive/"
-    $pip_packages = ["numpy<1.12","cairocffi", "Pillow"]
+    $pip_packages = ["numpy","cairocffi", "Pillow"]
     $packages = $operatingsystem ? {
         "Ubuntu" => [
             "build-essential",
@@ -48,7 +48,7 @@ class rdkit {
     # install rdkit
     exec { "install-rdkit":
         cwd => "/protwis/conf/protwis_puppet_modules/rdkit/",
-        command => "bash ./scripts/rdkit.sh",
+        command => "bash ./scripts/rdkit.sh 2>&1 | tee install_log.txt",
         require => [Exec["download-rdkit"],Package[$packages],Python::Puppet::Install::Pip[$pip_packages]],
         timeout     => 3600,
     }
