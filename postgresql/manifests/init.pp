@@ -58,6 +58,22 @@ class postgresql {
         }
     }
 
+    unless $::production_config {
+                          
+        $pg_hba_string = '"\nhost    all             all              10.0.2.2/32             md5"'
+        $pg_config_path = $osfamily ? {
+            "Debian" => "/etc/postgresql/9.3/main",
+            "RedHat" => "/var/lib/pgsql/data",
+        }
+        exec { "allow-postgres-password-auth-vm":
+                command => "echo ${pg_hba_string} >> ${pg_config_path}/pg_hba.conf; 
+                            sed -i 's/^#\\(listen_addresses.*\\)localhost\\(.\\)\\(.*$\\)/\\1*\\2         \\3/' ${pg_config_path}/postgresql.conf",
+                require => Package[$packages],
+                notify => Service['postgresql'],
+        }
+    }
+
+
     service { 'postgresql':
             ensure   => 'running',
             require => Package[$packages],
