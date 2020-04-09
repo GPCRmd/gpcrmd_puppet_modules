@@ -19,6 +19,7 @@ class python {
         "Ubuntu" => [
                 "python3.4",
                 "python3-pip",
+                "python3.4-dev",
                 # for python2, will be removed
                 "python-biopython",
                 "python-rdkit",
@@ -28,6 +29,9 @@ class python {
                 "python-yaml",
                 "libffi6",
                 "libffi-dev",
+                "libjpeg-dev",
+                "zlib1g",
+                "libyaml-cpp-dev",
         ],
         "CentOS" => [
                 "python34",
@@ -71,7 +75,7 @@ class python {
 
     # install virtualenv (using the system wide pip3 installation)
     exec { "install-virtualenv":
-        command => "pip3 install virtualenv",
+        command => "pip3 install pathlib2 virtualenv",
         require => Exec["install-pip"],
     }
 
@@ -93,14 +97,14 @@ class python {
         }
     }
 
-    $pip_packages_first = ["psycopg2<2.7","django<1.10","numpy","scipy","cython","pysolr<3.7","flask","Pillow"]
+    $pip_packages_first = ["psycopg2<2.7","django<1.10","numpy","scipy","cython","pysolr<3.7","flask","Pillow","PyYAML==3.12"]
     puppet::install::pip { $pip_packages_first: 
     	require => [Package["postgresql-9.3", "postgresql-contrib-9.3","solr-jetty"],Package[$packages], Exec["create-virtualenv"]]
     }
 
-    $pip_packages = ["matplotlib<3.1","ipython", "certifi",  "django-debug-toolbar<1.10", "biopython<1.68", "xlrd", "PyYAML",
+    $pip_packages = ["matplotlib<3.1","ipython", "certifi",  "django-debug-toolbar<1.10", "biopython<1.68", "xlrd",
         "djangorestframework<3.5", "django-rest-swagger==0.3.10", "XlsxWriter", "sphinx","requests<2.12", "cairocffi",
-	"defusedxml","mdtraj","django-graphos","django-haystack<2.6","django-revproxy","django-sendfile","pandas","bokeh"]
+	"defusedxml","mdtraj","django-graphos","django-haystack<2.6","django-revproxy","django-sendfile","pandas","bokeh==1.2.0"]
 
     puppet::install::pip { $pip_packages:
 	      before => Exec["build-indexes"],

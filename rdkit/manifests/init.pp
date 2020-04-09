@@ -17,7 +17,6 @@ class rdkit {
             "libwebp-dev",
             "tcl8.5-dev",
             "tk8.5-dev",
-            "python3.4-dev",
             "python3-tk",
             "libboost1.54-dev",
             "libboost-system1.54-dev",
@@ -49,7 +48,8 @@ class rdkit {
     exec { "install-rdkit":
         cwd => "/protwis/conf/protwis_puppet_modules/rdkit/",
         command => "bash ./scripts/rdkit.sh 2>&1 | tee install_log.txt",
-        require => [Exec["download-rdkit"],Package[$packages],Python::Puppet::Install::Pip[$pip_packages]],
+        require => [Exec["download-rdkit"],Package[$Python::packages],Package[$packages],Python::Puppet::Install::Pip[$pip_packages]],
+
         timeout     => 3600,
     }
     
