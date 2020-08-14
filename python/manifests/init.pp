@@ -48,6 +48,23 @@ class python {
         ],
     }
 
+    $pip_packages_first_requeriments = $operatingsystem ? {
+        "Ubuntu" => [
+            Package[
+                "postgresql-9.3",
+                "postgresql-contrib-9.3",
+                "solr-jetty"
+            ],
+        ],
+        "CentOS" => [
+            Package[
+                "postgresql95",
+                "postgresql-contrib95",
+            ],
+            ::Solr::Exec['install-solr'],
+        ]
+    }
+
     # install packages
     package { $packages:
         ensure => present,
@@ -99,7 +116,7 @@ class python {
 
     $pip_packages_first = ["psycopg2<2.7","django<1.10","numpy","scipy","cython","pysolr<3.7","flask","Pillow","PyYAML==3.12"]
     puppet::install::pip { $pip_packages_first: 
-    	require => [Package["postgresql-9.3", "postgresql-contrib-9.3","solr-jetty"],Package[$packages], Exec["create-virtualenv"]]
+    	require => $pip_packages_first_requeriments + [Package[$packages], Exec["create-virtualenv"]]
     }
 
     $pip_packages = ["matplotlib<3.1","ipython", "certifi",  "django-debug-toolbar<1.10", "biopython<1.68", "xlrd",

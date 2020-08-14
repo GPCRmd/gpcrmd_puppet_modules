@@ -26,10 +26,10 @@ class postgresql {
             "make",
         ],
         "RedHat" => [
-            "postgresql",
-            "postgresql-contrib",
-            "postgresql-server",
-            "postgresql-devel",
+            "postgresql96",
+            "postgresql96-contrib",
+            "postgresql96-server",
+            "postgresql96-devel",
         ],
     }
 
@@ -41,6 +41,13 @@ class postgresql {
 
     # RedHat distros require extra commands to init postgres
     if $osfamily == "RedHat" {
+        $postgresql_version = "9.6"
+        exec { "add-postgresql-repo":
+            command => "/usr/bin/yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm",
+            before => Package[$packages],
+        }
+
+
         exec { "init-postgres-db":
             command => "/usr/bin/true",
             unless => "postgresql-setup initdb", # if this command fails (DB already initialized, do nothing)
@@ -48,7 +55,7 @@ class postgresql {
         }
 
         exec { "allow-postgres-password-auth":
-            command => 'sed -i "s/ident/md5/g" /var/lib/pgsql/data/pg_hba.conf',
+            command => "sed -i \"s/ident/md5/g\" /var/lib/pgsql/${postgresql_version}/data/pg_hba.conf",
             require => Exec['init-postgres-db'],
         }
 
@@ -63,7 +70,7 @@ class postgresql {
         $pg_hba_string = '"\nhost    all             all              10.0.2.2/32             md5"'
         $pg_config_path = $osfamily ? {
             "Debian" => "/etc/postgresql/9.3/main",
-            "RedHat" => "/var/lib/pgsql/data",
+            "RedHat" => "/var/lib/pgsql/${postgresql_version}/data",
         }
         exec { "allow-postgres-password-auth-vm":
                 command => "echo ${pg_hba_string} >> ${pg_config_path}/pg_hba.conf; 
