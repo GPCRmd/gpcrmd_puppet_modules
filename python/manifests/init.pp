@@ -14,7 +14,7 @@
 #    limitations under the License.
 
 class python {
-
+    require postgresql
     $packages = $operatingsystem ? {
         "Ubuntu" => [
                 "python3.4",
@@ -37,37 +37,45 @@ class python {
                 "python34",
                 "python34-devel",
                 # for python2, will be removed
-                "python-biopython",
-                "python-matplotlib",
-                "rh-python34-numpy",
-                "rh-python34-scipy",
+                "python2-biopython",
+                "python2-matplotlib",
+                "rh-python35-numpy",
+                "rh-python35-scipy",
                 #"python-rdkit",
                 "PyYAML",
+                "libyaml",
+                "libyaml-devel",
                 "libffi",
                 "libffi-devel",
+                "libjpeg-turbo-devel",
+                "zlib",
+                "zlib-devel",
+                "gcc-c++"
+
         ],
     }
 
+
     $pip_packages_first_requeriments = $operatingsystem ? {
-        "Ubuntu" => [
-            Package[
-                "postgresql-9.3",
-                "postgresql-contrib-9.3",
-                "solr-jetty"
-            ],
+         "Ubuntu" => [
+                Package[$Postgresql::packages],
+                Package["solr-jetty"],
+                Exec["create-virtualenv"]
         ],
         "CentOS" => [
-            Package[
-                "postgresql95",
-                "postgresql-contrib95",
-            ],
-            ::Solr::Exec['install-solr'],
-        ]
+                Package[$Postgresql::packages],
+                Exec["create-virtualenv"],
+                Exec['install-solr'],
+                Exec["add-postgres-to-path-sh"],
+                Exec["install-boost"],
+
+        ],
     }
+
 
     # install packages
     package { $packages:
-        ensure => present,
+        ensure  => present,
         require => Exec["update-package-repo"]
     }
 
@@ -84,10 +92,10 @@ class python {
     exec { "install-pip":
         cwd => "/tmp",
         command => $operatingsystem ? {
-            "CentOS" => "wget https://bootstrap.pypa.io/get-pip.py;python3 get-pip.py",
+            "CentOS" => "curl -sL https://bootstrap.pypa.io/3.4/get-pip.py > get-pip.py;python3 get-pip.py",
             "Ubuntu" => "apt install -y python3-pip",
         },
-	require => Package[$packages],
+        require => Package[$packages],
     }
 
     # install virtualenv (using the system wide pip3 installation)
@@ -103,48 +111,71 @@ class python {
     }
 
 
-    
+
 
 
     # install packages inside the virtualenv with pip
-    define puppet::install::pip ($pip_package = $title) {
+    define puppet::install::pip (
+            $run_before = "/usr/bin/true",
+            $pip_package = $title,
+        ) {
+
         exec { "install-$pip_package":
-            command => "/env/bin/pip3 install \"$pip_package\"",
-            timeout => 1800,
+            provider => shell,
+            command  => "${run_before}; /env/bin/pip3 install \"$pip_package\"",
+            timeout  => 1800,
         }
     }
 
-    $pip_packages_first = ["psycopg2<2.7","django<1.10","numpy","scipy","cython","pysolr<3.7","flask","Pillow","PyYAML==3.12"]
-    puppet::install::pip { $pip_packages_first: 
-    	require => $pip_packages_first_requeriments + [Package[$packages], Exec["create-virtualenv"]]
+    $pip_packages_first = ["django<1.10","numpy","scipy","cython","pysolr<3.7","flask","Pillow","PyYAML==3.12"]
+
+    puppet::install::pip { "psycopg2<2.7":
+        require    => $pip_packages_first_requeriments,
+        run_before => "source '/etc/profile.d/pgsql${Postgresql::postgresql_version2}.sh'"
+    }
+    ->puppet::install::pip { $pip_packages_first:
+        require => $pip_packages_first_requeriments,
     }
 
     $pip_packages = ["matplotlib<3.1","ipython", "certifi",  "django-debug-toolbar<1.10", "biopython<1.68", "xlrd",
         "djangorestframework<3.5", "django-rest-swagger==0.3.10", "XlsxWriter", "sphinx","requests<2.12", "cairocffi",
-	"defusedxml","mdtraj","django-graphos","django-haystack<2.6","django-revproxy","django-sendfile","pandas","bokeh==1.2.0"]
+    "defusedxml","mdtraj","django-graphos","django-haystack<2.6","django-revproxy","django-sendfile","pandas","bokeh==1.2.0"]
 
     puppet::install::pip { $pip_packages:
-	      before => Exec["build-indexes"],
-	      require => [Puppet::Install::Pip[$pip_packages_first], Exec["create-virtualenv"]],
+            # before  => Exec["build-indexes"],
+            require => [Puppet::Install::Pip[$pip_packages_first], Exec["create-virtualenv"]],
     }
-    
-    #https://github.com/arose/mdsrv/pull/41
+
+/*     #https://github.com/arose/mdsrv/pull/41
     #https://github.com/pypa/setuptools/issues/458
     exec { "mdsrv-bug-fix":
             command => "/env/bin/pip3 install \"setuptools<38\"",
             timeout => 1800,
             require => Puppet::Install::Pip[$pip_packages],
-    }
-    
-    
+    } */
+
+
     puppet::install::pip { "mdsrv":
-	      before => Exec["build-indexes"],
-	      require => [Exec["mdsrv-bug-fix"] ,Puppet::Install::Pip[$pip_packages] ],
+            before  => Exec["build-indexes"],
+            require => Puppet::Install::Pip[$pip_packages],
     }
-    
-    exec { "restore-setuptools":
+
+    # symlink for apache to mdsrv webapp
+    file { "/env/lib/python3.4/site-packages/mdsrv":
+        ensure  => directory,
+        replace => false,
+        require => Puppet::Install::Pip["mdsrv"],
+    }
+
+    file { "/env/lib/python3.4/site-packages/mdsrv/webapp":
+        ensure  => link,
+        replace => false,
+        target  => "/env/lib64/python3.4/site-packages/mdsrv/webapp",
+        require => Puppet::Install::Pip["mdsrv"],
+    }
+/*     exec { "restore-setuptools":
             command => "/env/bin/pip3 install --upgrade \"setuptools\"",
             timeout => 1800,
             require => [Exec["mdsrv-bug-fix"] ,Puppet::Install::Pip["mdsrv"] ],
-    }
+    } */
 }

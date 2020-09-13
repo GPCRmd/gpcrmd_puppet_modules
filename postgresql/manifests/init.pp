@@ -14,44 +14,72 @@
 #    limitations under the License.
 
 class postgresql {
+
+    if $osfamily == "Debian"  {
+        $postgresql_version = "9.3"
+    } elsif $osfamily == "RedHat" {
+        $postgresql_version = "9.6"
+        $postgresql_version2 = "96"
+    }
+
     # package install list
     $packages = $osfamily ? {
         "Debian" => [
-            "postgresql-9.3",
-            "postgresql-contrib-9.3",
-	    "postgresql-server-dev-9.3",
+            "postgresql-${$postgresql_version}",
+            "postgresql-contrib-${$postgresql_version}",
+            "postgresql-server-dev-${$postgresql_version}",
             "postgresql-server-dev-all",
             "dctrl-tools",
             "lsb-release",
             "make",
         ],
         "RedHat" => [
-            "postgresql96",
-            "postgresql96-contrib",
-            "postgresql96-server",
-            "postgresql96-devel",
+            "postgresql${$postgresql_version2}",
+            "postgresql${$postgresql_version2}-contrib",
+            "postgresql${$postgresql_version2}-server",
+            "postgresql${$postgresql_version2}-devel",
         ],
+    }
+
+    $postgresql_service_name = $osfamily ? {
+        "Debian" => 'postgresql',
+        "RedHat" => "postgresql-${$postgresql_version}",
     }
 
     # install packages
     package { $packages:
-        ensure => present,
+        ensure  => present,
         require => Exec["update-package-repo"]
     }
 
     # RedHat distros require extra commands to init postgres
     if $osfamily == "RedHat" {
-        $postgresql_version = "9.6"
-        exec { "add-postgresql-repo":
+
+/*      exec { "add-postgresql-repo":
             command => "/usr/bin/yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm",
             before => Package[$packages],
-        }
+        } */
 
+        package { "pgdg-redhat-repo":
+            provider => "rpm",
+            ensure   => present,
+            source   => "https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm",
+            before   => Package[$packages],
+
+        }
 
         exec { "init-postgres-db":
             command => "/usr/bin/true",
-            unless => "postgresql-setup initdb", # if this command fails (DB already initialized, do nothing)
+            unless  => "/usr/pgsql-${postgresql_version}/bin/postgresql${postgresql_version2}-setup initdb", # if this command fails (DB already initialized, do nothing)
             require => Package[$packages],
+        }
+
+        exec { "add-postgres-to-path-sh":
+            provider => shell,
+            command  => "PROFILED_FILE='/etc/profile.d/pgsql${postgresql_version2}.sh'; \
+            echo 'export PATH=\"\$PATH\":/usr/pgsql-${postgresql_version}/bin/' > \"\$PROFILED_FILE\"; \
+            source \"\$PROFILED_FILE\"",
+            require  => Exec['init-postgres-db'],
         }
 
         exec { "allow-postgres-password-auth":
@@ -60,29 +88,32 @@ class postgresql {
         }
 
         exec { "start-postgres-server":
-            command => 'systemctl start postgresql;systemctl enable postgresql',
+            command => "systemctl start postgresql-${postgresql_version};systemctl enable postgresql-${postgresql_version}",
             require => Exec['allow-postgres-password-auth'],
         }
     }
 
     unless $::production_config {
-                          
         $pg_hba_string = '"\nhost    all             all              10.0.2.2/32             md5"'
         $pg_config_path = $osfamily ? {
-            "Debian" => "/etc/postgresql/9.3/main",
+            "Debian" => "/etc/postgresql/${$postgresql_version}/main",
             "RedHat" => "/var/lib/pgsql/${postgresql_version}/data",
         }
         exec { "allow-postgres-password-auth-vm":
-                command => "echo ${pg_hba_string} >> ${pg_config_path}/pg_hba.conf; 
+                command => "printf ${pg_hba_string} >> ${pg_config_path}/pg_hba.conf; 
                             sed -i 's/^#\\(listen_addresses.*\\)localhost\\(.\\)\\(.*$\\)/\\1*\\2         \\3/' ${pg_config_path}/postgresql.conf",
-                require => Package[$packages],
-                notify => Service['postgresql'],
+                require => $osfamily ? {
+                    "Debian" => Package[$packages],
+                    "RedHat" => Exec['init-postgres-db'],
+                },
+                notify  => Service[$postgresql_service_name]
         }
     }
 
 
-    service { 'postgresql':
-            ensure   => 'running',
+
+    service { $postgresql_service_name:
+            ensure  => 'running',
             require => Package[$packages],
     }
 

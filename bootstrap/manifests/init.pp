@@ -7,12 +7,24 @@ class bootstrap {
 
   # enable the multiverse (non-free) software repositories
   exec { "enable-alt-repos":
-    command => $operatingsystem ? {
-        "CentOS" => "yum -y install epel-release",
+    command  => $operatingsystem ? {
+        "CentOS" => "yum -y install epel-release centos-release-scl @\"Development Tools\"; yum -y remove boost*",
         "Ubuntu" => 'sed -i "/^# deb.*multiverse/ s/^# //" /etc/apt/sources.list',
-    require => Group["puppet"],
+    },
+    require  => Group["puppet"],
+    provider => shell,
+
+  }
+
+  if $osfamily == 'RedHat' {
+    exec { "disable-selinux":
+      command => "setenforce 0; sed -ir 's/^\\(\s*SELINUX=\\)enforcing\\b/\\1disabled/' /etc/selinux/config",
+      onlyif  => "selinuxenabled",
+      subscribe => Exec["enable-alt-repos"],
     }
   }
+
+
 
   # ensure that package repository up to date before beginning (Ubuntu only)
   exec { "update-package-repo":

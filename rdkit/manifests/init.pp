@@ -1,11 +1,10 @@
 class rdkit {
-    require python
+    require boost
     $release="Release_2016_03_1.tar.gz"
     $url="https://github.com/rdkit/rdkit/archive/"
     $pip_packages = ["numpy","cairocffi", "Pillow"]
     $packages = $operatingsystem ? {
         "Ubuntu" => [
-            "build-essential",
             "cmake",
             "sqlite3",
             "libsqlite3-dev",
@@ -18,23 +17,28 @@ class rdkit {
             "tcl8.5-dev",
             "tk8.5-dev",
             "python3-tk",
-            "libboost1.54-dev",
-            "libboost-system1.54-dev",
-            "libboost-thread1.54-dev",
-            "libboost-serialization1.54-dev",
-            "libboost-python1.54-dev",
-            "libboost-regex1.54-dev",
             "libcairo2",
-            "curl",
         ],
         "CentOS" => [
-            "curl",
+            "cmake",
+            "sqlite",
+            "sqlite-devel",
+            "tcl-devel",
+            "tk-devel",
+            "readline-devel",
+            "bzip2-devel",
+            "libtiff-devel",
+            "freetype-devel",
+            "libwebp-devel",
+            "lcms2-devel",
+            "cairo",
+
         ],
     }
 
     # install packages
     package { $packages:
-        ensure => present,
+        ensure  => present,
         require => Exec["update-package-repo"],
     }
 
@@ -44,13 +48,32 @@ class rdkit {
         timeout => 600,
         require => Package["curl"],
     }
+
+    $install_rdkit_requirements = $operatingsystem ? {
+        "Ubuntu" => [
+            Exec["download-rdkit"],
+            Package[$Python::packages],
+            Package[$packages],
+            Python::Puppet::Install::Pip[$Python::pip_packages],
+            Package[$Boost::packages],
+        ],
+        "CentOS" => [
+            Exec["download-rdkit"],
+            Package[$Python::packages],
+            Package[$packages],
+            Python::Puppet::Install::Pip[$Python::pip_packages],
+            Exec["install-boost"],
+            Exec["add-usr_local_lib"],
+        ],
+    }
+
+
     # install rdkit
     exec { "install-rdkit":
-        cwd => "/protwis/conf/protwis_puppet_modules/rdkit/",
-        command => "bash ./scripts/rdkit.sh 2>&1 | tee install_log.txt",
-        require => [Exec["download-rdkit"],Package[$Python::packages],Package[$packages],Python::Puppet::Install::Pip[$pip_packages]],
-
-        timeout     => 3600,
+        cwd     => "/protwis/conf/protwis_puppet_modules/rdkit/",
+        command => "bash ./scripts/rdkit.sh ${Boost::boost_root} 2>&1 | tee install_log.txt",
+        require => $install_rdkit_requirements,
+        timeout => 3600,
     }
-    
+
 }

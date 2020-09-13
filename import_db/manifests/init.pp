@@ -20,8 +20,8 @@ class import_db {
     exec { "create-postgres-user":
         command => "expect -f /protwis/conf/protwis_puppet_modules/import_db/scripts/createuser.exp",
         require => $osfamily ? {
-            "Debian" => [ Package["postgresql-9.3", "expect"], Service["postgresql"] ],
-            "RedHat" => [ Package["postgresql", "expect"], Exec["start-postgres-server"], Service["postgresql"] ],
+            "Debian" => [ Package["postgresql-${Postgresql::postgresql_version}", "expect"], Service[$Postgresql::postgresql_service_name] ],
+            "RedHat" => [ Package["postgresql${Postgresql::postgresql_version2}", "expect"], Exec["start-postgres-server"], Service[$Postgresql::postgresql_service_name] ],
         }
     }
 
