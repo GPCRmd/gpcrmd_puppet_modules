@@ -14,6 +14,12 @@ class boost {
             "libicu",
             "libicu-devel",
             "perl",
+            # "boost",
+            # "boost-devel",
+            # "boost-system",
+            # "boost-thread",
+            # "boost-serialization",
+            # "boost-regex",
         ],
     }
 

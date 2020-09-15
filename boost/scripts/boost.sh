@@ -15,7 +15,9 @@ done
 ./bootstrap.sh --with-python-version=3.4 --with-python=/env/bin/python3 --with-python-root=/env --with-libraries=python,regex,thread,serialization
 perl -pi  -e "my \$line = 'using python : 3.4 : /env/bin/python3 : /usr/include/python3.4m : \"$PY_LIBRARY_PATH\" ;';\
   s/^(import\s+python\s*;)\s*$/\1\n\$line\n/" /usr/local/source/boost*/project-config.jam
-./b2 install #-a cxxflags=-fPIC cflags=-fPIC Flags for enabling shared and static linking
+#perl -pi  -e "my \$line = 'using python : 3.4 : /env/bin/python3 : /usr/include/python3.4m : \"$PY_LIBRARY_PATH\" ;';\
+#   s/^\s*using\s+python\s+.*$/\$line/" /usr/local/source/boost*/project-config.jam
+./b2 install -a cxxflags=-fPIC cflags=-fPIC #Flags for enabling shared and static linking
 
 
 
