@@ -8,7 +8,8 @@ class bootstrap {
   # enable the multiverse (non-free) software repositories
   exec { "enable-alt-repos":
     command  => $operatingsystem ? {
-        "CentOS" => "yum -y install epel-release centos-release-scl @\"Development Tools\"; yum -y remove boost*",
+        "CentOS" => "yum -y install epel-release centos-release-scl",
+        #@\"Development Tools\"; yum -y remove boost*
         "Ubuntu" => 'sed -i "/^# deb.*multiverse/ s/^# //" /etc/apt/sources.list',
     },
     require  => Group["puppet"],

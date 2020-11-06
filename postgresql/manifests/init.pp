@@ -18,8 +18,8 @@ class postgresql {
     if $osfamily == "Debian"  {
         $postgresql_version = "9.3"
     } elsif $osfamily == "RedHat" {
-        $postgresql_version = "9.6"
-        $postgresql_version2 = "96"
+        $postgresql_version = "9.5"
+        $postgresql_version2 = "95"
     }
 
     # package install list

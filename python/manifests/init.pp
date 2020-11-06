@@ -37,10 +37,7 @@ class python {
                 "python34",
                 "python34-devel",
                 # for python2, will be removed
-                "python2-biopython",
-                "python2-matplotlib",
-                "rh-python35-numpy",
-                "rh-python35-scipy",
+                #"python2-biopython",
                 #"python-rdkit",
                 "PyYAML",
                 "libyaml",
@@ -142,7 +139,7 @@ class python {
     "defusedxml","mdtraj","django-graphos","django-haystack<2.6","django-revproxy","django-sendfile","pandas","bokeh==1.2.0"]
 
     puppet::install::pip { $pip_packages:
-            # before  => Exec["build-indexes"],
+            before  => Exec["build-indexes"],
             require => [Puppet::Install::Pip[$pip_packages_first], Exec["create-virtualenv"]],
     }
 
