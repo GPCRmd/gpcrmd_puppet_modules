@@ -163,7 +163,7 @@ class apache {
         cwd         => "/protwis/sites/protwis",
         command     => "/env/bin/python3 manage.py build_blast_database",
         environment => ["LC_ALL=en_US.UTF-8"],
-        require     => [Package["ncbi-blast-2.10.1+-1"] , Exec["import-db-dump", "install-rdkit"], Python::Puppet::Install::Pip[$python::pip_packages]],
+        require     => [Package["ncbi-blast-2.11.0+-1"] , Exec["import-db-dump", "install-rdkit"], Python::Puppet::Install::Pip[$python::pip_packages]],
         notify      => File["remove_django_cache_directory"],
     }
     exec { "collect-static":

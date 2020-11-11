@@ -70,26 +70,28 @@ class postgresql {
 
         exec { "init-postgres-db":
             command => "/usr/bin/true",
-            unless  => "/usr/pgsql-${postgresql_version}/bin/postgresql${postgresql_version2}-setup initdb", # if this command fails (DB already initialized, do nothing)
+            unless  => "/usr/pgsql-${$postgresql_version}/bin/postgresql${$postgresql_version2}-setup initdb", # if this command fails (DB already initialized, do nothing)
             require => Package[$packages],
         }
 
         exec { "add-postgres-to-path-sh":
             provider => shell,
-            command  => "PROFILED_FILE='/etc/profile.d/pgsql${postgresql_version2}.sh'; \
-            echo 'export PATH=\"\$PATH\":/usr/pgsql-${postgresql_version}/bin/' > \"\$PROFILED_FILE\"; \
+            command  => "PROFILED_FILE='/etc/profile.d/pgsql${$postgresql_version2}.sh'; \
+            echo 'export PATH=\"\$PATH\":/usr/pgsql-${$postgresql_version}/bin/' > \"\$PROFILED_FILE\"; \
             source \"\$PROFILED_FILE\"",
             require  => Exec['init-postgres-db'],
         }
 
         exec { "allow-postgres-password-auth":
-            command => "sed -i \"s/ident/md5/g\" /var/lib/pgsql/${postgresql_version}/data/pg_hba.conf",
+            command => "sed -i \"s/ident/md5/g\" /var/lib/pgsql/${$postgresql_version}/data/pg_hba.conf",
             require => Exec['init-postgres-db'],
         }
 
         exec { "start-postgres-server":
-            command => "systemctl start postgresql-${postgresql_version};systemctl enable postgresql-${postgresql_version}",
-            require => Exec['allow-postgres-password-auth'],
+            command => "systemctl start postgresql-${$postgresql_version};systemctl enable postgresql-${$postgresql_version}",
+            require => $::production_config ? {
+                false => Exec['allow-postgres-password-auth'],
+                },
         }
     }
 
@@ -97,11 +99,11 @@ class postgresql {
         $pg_hba_string = '"\nhost    all             all              10.0.2.2/32             md5"'
         $pg_config_path = $osfamily ? {
             "Debian" => "/etc/postgresql/${$postgresql_version}/main",
-            "RedHat" => "/var/lib/pgsql/${postgresql_version}/data",
+            "RedHat" => "/var/lib/pgsql/${$postgresql_version}/data",
         }
         exec { "allow-postgres-password-auth-vm":
-                command => "printf ${pg_hba_string} >> ${pg_config_path}/pg_hba.conf; 
-                            sed -i 's/^#\\(listen_addresses.*\\)localhost\\(.\\)\\(.*$\\)/\\1*\\2         \\3/' ${pg_config_path}/postgresql.conf",
+                command => "printf ${$pg_hba_string} >> ${$pg_config_path}/pg_hba.conf; 
+                            sed -i 's/^#\\(listen_addresses.*\\)localhost\\(.\\)\\(.*$\\)/\\1*\\2         \\3/' ${$pg_config_path}/postgresql.conf",
                 require => $osfamily ? {
                     "Debian" => Package[$packages],
                     "RedHat" => Exec['init-postgres-db'],

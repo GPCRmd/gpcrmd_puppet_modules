@@ -25,6 +25,8 @@ done
 
 
 cmake -D RDK_BUILD_SWIG_WRAPPERS=OFF \
+-D CMAKE_C_FLAGS="-I /env/lib64/python3.4/site-packages/numpy/core/include" \
+-D CMAKE_CXX_FLAGS="-I /env/lib64/python3.4/site-packages/numpy/core/include" \
 -D PYTHON_LIBRARY="$PY_LIBRARY_PATH" \
 -D PYTHON_INCLUDE_DIR=/usr/include/python3.4m/ \
 -D PYTHON_EXECUTABLE=/env/bin/python3 \

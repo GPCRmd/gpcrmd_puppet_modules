@@ -76,50 +76,72 @@ class python {
         require => Exec["update-package-repo"]
     }
 
-    # create a python3 symlink, because the names of the executable differ between OSes
-    file { "/usr/local/bin/python3":
-        ensure => "link",
-        target => "/usr/bin/python3.4",
-        require => $operatingsystem ? {
-            "CentOS" => Package["python34"],
-            "Ubuntu" => Package["python3.4"],
+
+    if $operatingsystem == "CentOS" and false {
+
+        #download conda
+        exec { "download-conda":
+            command => "curl -sLo /protwis/conf/protwis_puppet_modules/python/Miniconda3-4.6.14-Linux-x86_64.sh https://repo.anaconda.com/miniconda/Miniconda3-4.6.14-Linux-x86_64.sh",
+            require => Package["curl"],
         }
-    } ->
-    # install pip
-    exec { "install-pip":
-        cwd => "/tmp",
-        command => $operatingsystem ? {
-            "CentOS" => "curl -sL https://bootstrap.pypa.io/3.4/get-pip.py > get-pip.py;python3 get-pip.py",
-            "Ubuntu" => "apt install -y python3-pip",
-        },
-        require => Package[$packages],
-    }
 
-    # install virtualenv (using the system wide pip3 installation)
-    exec { "install-virtualenv":
-        command => "pip3 install pathlib2 virtualenv",
-        require => Exec["install-pip"],
-    }
+        #install conda
+        exec { "install-conda":
+            command => "bash /protwis/conf/protwis_puppet_modules/python/Miniconda3-4.6.14-Linux-x86_64.sh -b -p /opt/miniconda",
+            require => Exec["download-conda"],
+        }
 
-    # create virtualenv
-    exec { "create-virtualenv":
-        command => "virtualenv -p python3 /env",
-        require => Exec["install-virtualenv"],
+        exec { "create-conda-env":
+            command => "source /opt/miniconda/bin/activate; conda create --prefix /env python=3.4",
+            require => Exec["install-conda"],
+        }
+
     }
 
 
+        # create a python3 symlink, because the names of the executable differ between OSes
+        file { "/usr/local/bin/python3":
+            ensure => "link",
+            target => "/usr/bin/python3.4",
+            require => $operatingsystem ? {
+                "CentOS" => Package["python34"],
+                "Ubuntu" => Package["python3.4"],
+            }
+        } ->
+        # install pip
+        exec { "install-pip":
+            cwd => "/tmp",
+            command => $operatingsystem ? {
+                "CentOS" => "curl -sL https://bootstrap.pypa.io/3.4/get-pip.py > get-pip.py;python3 get-pip.py",
+                "Ubuntu" => "apt install -y python3-pip",
+            },
+            require => Package[$packages],
+        }
 
+
+        # install virtualenv (using the system wide pip3 installation)
+        exec { "install-virtualenv":
+            command => "pip3 install pathlib2 virtualenv",
+            require => Exec["install-pip"],
+        }
+
+        # create virtualenv
+        exec { "create-virtualenv":
+            command => "virtualenv -p python3 /env",
+            require => Exec["install-virtualenv"],
+        }
 
 
     # install packages inside the virtualenv with pip
     define puppet::install::pip (
             $run_before = "/usr/bin/true",
             $pip_package = $title,
+            $options = "",
         ) {
 
         exec { "install-$pip_package":
             provider => shell,
-            command  => "${run_before}; /env/bin/pip3 install \"$pip_package\"",
+            command  => "${run_before}; /env/bin/pip3 install ${options} \"$pip_package\"",
             timeout  => 1800,
         }
     }

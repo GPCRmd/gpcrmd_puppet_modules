@@ -32,10 +32,10 @@ class tools {
         ensure => present,
         require => Exec["update-package-repo"],
     }
-    package { "ncbi-blast-2.10.1+-1":
+    package { "ncbi-blast-2.11.0+-1":
             provider => "rpm",
             ensure   => present,
-            source   => "https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-2.10.1+-1.x86_64.rpm",
+            source   => "https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.11.0/ncbi-blast-2.11.0+-1.x86_64.rpm",
             require  => Package[$packages],
 
     }
